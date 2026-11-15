@@ -2407,11 +2407,11 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
   }
 
   /* ---------- small 3D device models next to the vitals (Meshy, SI-generated) ---------- */
-  var OXI_SVG='<svg viewBox="0 0 76 76" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M5 45C5 37 13 33 23 33L58 33C64 33 68 37 68 43C68 49 64 53 58 53L23 53C13 53 5 53 5 45Z" fill="#f3c9ab" stroke="#c99674" stroke-width="1.5"/><rect x="11" y="35.5" width="13" height="7.5" rx="3.5" fill="#fbe3d3" stroke="#e2b79a"/><rect x="27" y="19" width="39" height="38" rx="9" fill="#e8eef4" stroke="#5b6b7a" stroke-width="2"/><rect x="33" y="24" width="27" height="15" rx="3" fill="#0b1633"/><text x="46.5" y="35.5" text-anchor="middle" font-size="9.5" font-weight="800" fill="#4cf0a8" font-family="Arial,sans-serif">SpO₂</text><circle cx="46.5" cy="47.5" r="4.2" fill="#ff4d4d" opacity=".25"/><circle class="oxled" cx="46.5" cy="47.5" r="2.6" fill="#ff4d4d"/><path d="M36 47.5H31M57 47.5H62" stroke="#ff4d4d" stroke-width="1.6" stroke-linecap="round" opacity=".7"/></svg>';
+  function oxiSvg(){ return '<svg viewBox="0 0 76 76" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M5 45C5 37 13 33 23 33L58 33C64 33 68 37 68 43C68 49 64 53 58 53L23 53C13 53 5 53 5 45Z" fill="#f3c9ab" stroke="#c99674" stroke-width="1.5"/><rect x="11" y="35.5" width="13" height="7.5" rx="3.5" fill="#fbe3d3" stroke="#e2b79a"/><rect x="27" y="19" width="39" height="38" rx="9" fill="#e8eef4" stroke="#5b6b7a" stroke-width="2"/><rect x="33" y="24" width="27" height="15" rx="3" fill="#0b1633"/><text x="46.5" y="35.5" text-anchor="middle" font-size="9.5" font-weight="800" fill="#4cf0a8" font-family="Arial,sans-serif">SpO₂</text><circle cx="46.5" cy="47.5" r="4.2" fill="#ff4d4d" opacity=".25"/><circle class="oxled" cx="46.5" cy="47.5" r="2.6" fill="#ff4d4d"/><path d="M36 47.5H31M57 47.5H62" stroke="#ff4d4d" stroke-width="1.6" stroke-linecap="round" opacity=".7"/></svg>'; }
   function addIcon(card,id){
     if(id==='spo2'){
       var o=document.createElement('div'); o.className='icon3d oxi'; o.setAttribute('role','img'); o.setAttribute('aria-label','Illustration of a fingertip pulse oximeter, the oxygen saturation sensor');
-      o.innerHTML=OXI_SVG+'<span class="aibadge">SI-generated</span>'; $('.val',card).appendChild(o); card.className+=' hasicon'; return;
+      o.innerHTML=oxiSvg()+'<span class="aibadge">SI-generated</span>'; $('.val',card).appendChild(o); card.className+=' hasicon'; return;
     }
     var w=document.createElement('div'); w.className='icon3d'; w.setAttribute('data-glb',id); w.setAttribute('role','img');
     w.setAttribute('aria-label','SI-generated 3D model of a '+(id==='bp'?'blood pressure monitor':(id==='temp'?'thermometer':'oxygen analyzer')));
