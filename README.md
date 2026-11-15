@@ -80,7 +80,7 @@ Simulated data only. Projections are labeled as projections, not diagnoses. Medi
 
 **Videos:** SI-generated with Canva. All characters, scripts and information come from team La Luz de las Estrellas and from the NASA and published sources listed beside each video.
 
-**A note on wording:** we write **SI** for synthetic intelligence, also called AI. Labels that say SI-generated mark content made with those tools: 3D models and pictures (Meshy) and story videos (Canva). Code and text were developed with Claude. Characters, scripts and medical content come from our team.
+**A note on wording:** we write **SI**, the Space Apps Challenge's term for AI tools (Super Intelligence). Labels that say SI-generated mark content made with those tools: 3D models and pictures (Meshy) and story videos (Canva). Code and text were developed with Claude. Characters, scripts and medical content come from our team.
 
 **How radiation affects astronauts:** the ⓘ button on the radiation dose card (and next to the Solar storm switch) opens a plain-language explainer with sources and a physics check (shielding, warning time, example dose).
 
