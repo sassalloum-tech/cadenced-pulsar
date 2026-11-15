@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Earth Mission Control · Holographic HUD</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); color-scheme:dark; --cy:#00ffcc; --red:#ff4d4d; --gold:#ffcc00; --ink:#e9fffa; --mut:#9fd9cc; }
+*,*::before,*::after{ box-sizing:inherit }
+body{ margin:0; padding:16px 18px 28px; min-height:100vh; color:var(--cy); font-family:'Share Tech Mono',ui-monospace,Menlo,Consolas,monospace; background:radial-gradient(circle at center,#0a192f 0%,#000 100%); background-color:#050505 }
+a{ color:var(--gold) } a:focus-visible,button:focus-visible{ outline:3px solid #8ab4ff; outline-offset:3px }
+.header{ font-family:'Orbitron',system-ui,sans-serif; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px 18px; border-bottom:2px solid rgba(0,255,204,.5); padding-bottom:10px; margin-bottom:12px }
+.header h1{ margin:0; font-size:clamp(1rem,2.4vw,1.5rem); text-shadow:0 0 15px var(--cy) }
+.clock{ color:var(--gold); text-shadow:0 0 10px var(--gold); font-size:.95rem }
+.bar{ display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; margin:0 0 12px; font-size:.9rem }
+.chip{ border:1px solid rgba(0,255,204,.5); border-radius:999px; padding:2px 12px; color:var(--ink) }
+.chip.live{ border-color:#38e08a; color:#38e08a } .chip.demo{ border-color:var(--gold); color:var(--gold) }
+.note{ margin:0 0 14px; padding:8px 12px; border:1px solid rgba(255,204,0,.45); border-radius:8px; background:rgba(40,30,0,.5); color:#ffe9a6; font-size:.9rem }
+.grid{ display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:16px }
+@media (max-width:960px){ .grid{ grid-template-columns:1fr } }
+.panel{ border:1px solid rgba(0,255,204,.4); border-left:4px solid var(--cy); border-radius:6px; background:rgba(10,10,10,.75); padding:14px; box-shadow:0 0 15px rgba(0,255,204,.1); margin-bottom:14px }
+.panel h2{ margin:0 0 8px; font-size:.82rem; font-family:'Orbitron',system-ui,sans-serif; text-transform:uppercase; color:#fff; border-bottom:1px solid rgba(255,255,255,.2); padding-bottom:5px; letter-spacing:.04em }
+.panel.crit{ border-color:var(--red); border-left-color:var(--red); box-shadow:0 0 20px rgba(255,77,77,.4) }
+.panel.crit h2{ color:var(--red); text-shadow:0 0 10px var(--red) }
+.row{ display:flex; justify-content:space-between; gap:10px; padding:5px 0; font-size:.92rem; border-bottom:1px dashed rgba(0,255,204,.2) }
+.val{ font-weight:bold; color:#fff; text-align:right }
+.heart{ position:relative; width:100%; height:250px }
+.heart canvas{ display:block; width:100% !important; height:100% !important }
+.heartmsg{ position:absolute; inset:0; display:none; align-items:center; justify-content:center; text-align:center; padding:14px; color:var(--mut) }
+canvas#ecg{ display:block; width:100%; height:70px; margin-top:8px }
+.hidden{ display:none }
+.small{ font-size:.82rem; color:var(--mut); margin:8px 0 0 }
+.log{ margin:6px 0 0; padding:0; list-style:none; font-size:.86rem; max-height:150px; overflow:auto }
+.log li{ padding:4px 0; border-bottom:1px dashed rgba(0,255,204,.2); color:var(--ink) }
+.btns{ display:flex; flex-wrap:wrap; gap:10px; margin-top:6px }
+.btn{ font-family:inherit; font-size:.95rem; font-weight:bold; border:1px solid var(--cy); background:transparent; color:var(--cy); border-radius:8px; padding:8px 16px; cursor:pointer; min-height:44px }
+.btn[aria-pressed="true"]{ background:var(--cy); color:#001a14 }
+footer{ margin-top:10px; font-size:.82rem; color:var(--mut) }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>EARTH MISSION CONTROL · HOLOGRAPHIC HUD</h1>
+  <span class="clock" id="earthClock">Earth Sync: --:--:--</span>
+</div>
+<div class="bar">
+  <span class="chip demo" id="linkChip" role="status">STANDALONE DEMO</span>
+  <a href="index.html">Back to the monitor</a>
+  <span class="chip">Real signal delay: up to 22 min each way (shown live here)</span>
+</div>
+<p class="note"><b>Simulated data.</b> Prototype for the NASA Space Apps Challenge 2026, not a medical device. Open the monitor in another tab on the same site, press a scenario there, and this screen follows it. Opened alone, it runs its own demo.</p>
+
+<main class="grid">
+  <div>
+    <section class="panel" id="heartPanel" aria-label="Digital heart twin">
+      <h2>Astronaut heart · particle twin (illustrative)</h2>
+      <div class="heart" id="heartBox"><div class="heartmsg" id="heartMsg">3D view unavailable here. The numbers still update.</div></div>
+      <canvas id="ecg" width="500" height="70" role="img" aria-label="Live ECG trace of the astronaut"></canvas>
+    </section>
+    <section class="panel" aria-label="Cardiac metrics">
+      <h2>Cardiac metrics</h2>
+      <div class="row"><span>HEART RATE:</span><span class="val" id="valHR">--</span></div>
+      <div class="row"><span>BLOOD PRESSURE:</span><span class="val" id="valBP">--</span></div>
+      <div class="row"><span>EJECTION FRACTION (sim):</span><span class="val" id="valEF">--</span></div>
+      <div class="row"><span>CARDIAC OUTPUT (sim):</span><span class="val" id="valCO">--</span></div>
+      <div class="row"><span>STATUS:</span><span class="val" id="valStatus" aria-live="polite">--</span></div>
+      <p class="small">Cardiac output = heart rate × stroke volume, and stroke volume = filled volume (about 120 mL) × ejection fraction.</p>
+    </section>
+  </div>
+
+  <div>
+    <section class="panel" aria-label="Prediction engine">
+      <h2>Prediction engine (illustrative)</h2>
+      <div class="row"><span>VF RISK:</span><span class="val" id="predVF">2%</span></div>
+      <div class="row"><span>SHOCK RISK:</span><span class="val" id="predShock">3%</span></div>
+      <div class="row"><span>HEART FAILURE:</span><span class="val" id="predHF">1%</span></div>
+      <div style="text-align:right; margin-top:12px; font-weight:bold" id="predTrend">TREND: ▼ STABLE</div>
+      <p class="small">Illustrative estimates for the demo, not a validated model.</p>
+    </section>
+    <section class="panel crit hidden" id="aiPanel" aria-label="AI explainability">
+      <h2>AI explainability (illustrative)</h2>
+      <div class="row"><span id="aiEcgL">ECG ST ELEVATION</span><span class="val" id="aiEcg">+40%</span></div>
+      <div class="row"><span>TROPONIN</span><span class="val" id="aiTrop">--</span></div>
+      <div class="row"><span>WALL MOTION (ULTRASOUND)</span><span class="val" id="aiUs">--</span></div>
+      <div style="text-align:center; margin-top:12px; font-weight:bold; color:var(--red)" id="aiConf">WAITING FOR MORE EVIDENCE</div>
+      <p class="small">The percentages show how much each finding would weigh in this illustration.</p>
+    </section>
+    <section class="panel" aria-label="Messages received from the spacecraft">
+      <h2>Messages received from the spacecraft</h2>
+      <ul class="log" id="msgLog"><li>No messages yet. The ship sends its queue on the next network sync.</li></ul>
+    </section>
+  </div>
+
+  <div>
+    <section class="panel" aria-label="Life support and environment">
+      <h2>Life support and environment</h2>
+      <div class="row"><span>RESPIRATION RATE:</span><span class="val" id="valResp">--</span></div>
+      <div class="row"><span>SPO2:</span><span class="val" id="valSpo2">--</span></div>
+      <div class="row"><span>BODY TEMPERATURE:</span><span class="val" id="valTemp">--</span></div>
+      <div class="row"><span>CABIN CO₂:</span><span class="val" id="valCo2">--</span></div>
+      <div class="row"><span>CABIN PRESSURE:</span><span class="val">14.7 psi</span></div>
+      <div class="row"><span>CABIN O2:</span><span class="val">21.0%</span></div>
+    </section>
+    <section class="panel" aria-label="Relay station">
+      <h2>🛰 IMRVS relay station</h2>
+      <div class="row"><span>PACKET ID:</span><span class="val" id="relayPacket">----</span></div>
+      <div class="row"><span>INTEGRITY:</span><span class="val">100%</span></div>
+      <div class="row"><span>EARTH RECEIPT:</span><span class="val" id="relayStatus" style="color:var(--gold)">PENDING</span></div>
+      <div class="row"><span>QUEUED ON THE SHIP:</span><span class="val" id="relayQueue">0</span></div>
+      <p class="small">The delay is compressed for the demo. In real flight a packet can take up to 22 minutes.</p>
+    </section>
+    <section class="panel" aria-label="Demo controls">
+      <h2>Demo controls (standalone only)</h2>
+      <div class="btns">
+        <button class="btn" id="demoStable" type="button" aria-pressed="true">Stable</button>
+        <button class="btn" id="demoCrit" type="button" aria-pressed="false">Heart attack (STEMI)</button>
+      </div>
+    </section>
+  </div>
+</main>
+<footer>Team La Luz de las Estrellas · all values are simulated · layout and code developed with AI assistance and reviewed by the team physician.</footer>
+
+<script>
+(function(){
+  'use strict';
+  function $(id){ return document.getElementById(id); }
+  var reduce=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- clock ---------- */
+  setInterval(function(){ $('earthClock').textContent='Earth Sync: '+new Date().toLocaleTimeString(); },1000);
+
+  /* ---------- state ---------- */
+  var cur={hr:62,sbp:110,dbp:70,spo2:98,rr:14,temp:37.4,co2:3.0,lvl:0,phase:0,trop:'none',us:'normal',queued:0};
+  var lastLive=0, packetNo=0, demoCrit=false, relayTimer=null;
+
+  function setT(id,t){ var e=$(id); if(e && e.textContent!==t) e.textContent=t; }
+  function round(n){ return Math.round(n); }
+
+  /* ---------- apply one telemetry packet ---------- */
+  function apply(p){
+    cur.hr=p.hr; cur.sbp=p.sbp; cur.dbp=p.dbp; cur.spo2=p.spo2; cur.rr=p.rr; cur.temp=p.temp; cur.co2=p.co2;
+    cur.lvl=p.lvl; cur.phase=p.phase||0; cur.trop=p.trop||'none'; cur.us=p.us||'normal'; cur.queued=p.queued||0;
+    var arrest=(p.lvl>=3), crit=(p.lvl>=2), attack=(p.phase>=4);
+    // simulated pump function: output = heart rate x stroke volume, stroke volume = 120 mL x ejection fraction
+    var ef=arrest?0:(crit?45:58), co=arrest?0:(p.hr*120*ef/100/1000);
+    setT('valHR',arrest?'No pulse (CPR)':round(p.hr)+' BPM');
+    setT('valBP',arrest?'--':round(p.sbp)+'/'+round(p.dbp));
+    setT('valEF',arrest?'--':ef+'%');
+    setT('valCO',arrest?'CPR assisted':co.toFixed(1)+' L/min');
+    setT('valSpo2',round(p.spo2)+'%'); setT('valResp',round(p.rr)+' bpm'); setT('valTemp',p.temp.toFixed(1)+' °C'); setT('valCo2',p.co2.toFixed(1)+' mmHg');
+    var st=arrest?'CARDIAC ARREST':(attack?'HEART ATTACK (STEMI PATHWAY)':(crit?'ALERT: HEART CHECK':(p.lvl===1?'WATCH: SUBTLE CHANGE':'STABLE')));
+    var sv=$('valStatus'); setT('valStatus',st); sv.style.color=crit?'#ff4d4d':(p.lvl===1?'#ffcc00':'#00ffcc');
+    $('heartPanel').className='panel'+(crit?' crit':'');
+    // prediction engine (illustrative numbers)
+    var vf='2%', sh='3%', hf='1%', tr='TREND: ▼ STABLE', col='#00ffcc';
+    if(p.lvl===1){ vf='5%'; sh='6%'; hf='2%'; tr='TREND: ► WATCH'; col='#ffcc00'; }
+    if(crit){ vf='12%'; sh='17%'; hf='8%'; tr='TREND: ▲ WORSENING'; col='#ff4d4d'; }
+    if(arrest){ vf='ACTIVE'; sh='--'; hf='--'; tr='CPR AND AED ACTIVE'; col='#ff4d4d'; }
+    setT('predVF',vf); setT('predShock',sh); setT('predHF',hf); setT('predTrend',tr); $('predTrend').style.color=col;
+    // explainability: show real findings from the monitor
+    $('aiPanel').className='panel crit'+(crit?'':' hidden');
+    var trop=(cur.trop==='rise'), us=(cur.us==='rwma');
+    setT('aiEcg','+40%'); setT('aiTrop',trop?'+35%':'not detected'); setT('aiUs',us?'+13%':'no change');
+    setT('aiConf',(trop&&us)?'ILLUSTRATIVE CONFIDENCE: 98%':(attack?'ECG CONFIRMS ST ELEVATION: TREAT NOW':'WAITING FOR MORE EVIDENCE'));
+    // relay packet
+    packetNo=(packetNo%9999)+1; setT('relayPacket',('0000'+packetNo).slice(-4)); setT('relayQueue',String(cur.queued));
+    setT('relayStatus','IN FLIGHT'); $('relayStatus').style.color='#ffcc00';
+    clearTimeout(relayTimer); relayTimer=setTimeout(function(){ setT('relayStatus','RECEIVED'); $('relayStatus').style.color='#38e08a'; },1500);
+    if(window.updateHeart3D) window.updateHeart3D(crit,p.hr,arrest);
+  }
+
+  /* ---------- live link from the monitor (same site, another tab) ---------- */
+  var bc=null;
+  try{ bc=new BroadcastChannel('ascis-earth'); bc.onmessage=function(ev){
+    var d=ev.data||{};
+    if(d.type==='telemetry'){ lastLive=Date.now(); setMode(true); apply(d); }
+    if(d.type==='sync'){ addMsg(d); }
+  }; }catch(e){}
+  function addMsg(d){
+    var parts=[]; if(d.alerts&&d.alerts.length) parts.push('Low supply: '+d.alerts.join('; ')); if(d.eye) parts.push('Eye check: '+d.eye);
+    var li=document.createElement('li'); li.textContent=new Date().toLocaleTimeString()+'  Sync received: '+d.n+' item'+(d.n===1?'':'s')+(parts.length?'. '+parts.join('. '):'.');
+    var log=$('msgLog'); if(log.children.length===1 && /No messages yet/.test(log.children[0].textContent)) log.innerHTML=''; log.insertBefore(li,log.firstChild);
+  }
+  function setMode(live){ var c=$('linkChip'); c.textContent=live?'LIVE LINK TO THE MONITOR':'STANDALONE DEMO'; c.className='chip '+(live?'live':'demo'); }
+
+  /* ---------- standalone demo ---------- */
+  function jit(a){ return (Math.random()-0.5)*a; }
+  setInterval(function(){
+    if(Date.now()-lastLive<4000) return; setMode(false);
+    var c=demoCrit;
+    apply({hr:c?97+jit(3):62+jit(3), sbp:c?92+jit(3):110+jit(3), dbp:c?58+jit(2):70+jit(2), spo2:c?95+jit(1):98+jit(.6), rr:c?20+jit(1):14+jit(.8), temp:c?37.6:37.4, co2:3.0, lvl:c?2:0, phase:c?4:0, trop:c?'rise':'none', us:c?'rwma':'normal', queued:0});
+  },1000);
+  function setDemo(c){ demoCrit=c; $('demoStable').setAttribute('aria-pressed',String(!c)); $('demoCrit').setAttribute('aria-pressed',String(c)); }
+  $('demoStable').addEventListener('click',function(){ setDemo(false); });
+  $('demoCrit').addEventListener('click',function(){ setDemo(true); });
+
+  /* ---------- ECG trace ---------- */
+  var ecg=$('ecg'), ex=ecg.getContext('2d');
+  function g(t,mu,sg,a){ return a*Math.exp(-((t-mu)*(t-mu))/(2*sg*sg)); }
+  function sig(x){ return 1/(1+Math.exp(-x)); }
+  function ecgY(ph){
+    var y=g(ph,.12,.025,.10)+g(ph,.20,.008,-.12)+g(ph,.23,.010,1.0)+g(ph,.26,.010,-.22)+g(ph,.50,.05,.25);
+    if(cur.lvl>=2) y+=0.3*sig((ph-.27)*60)*sig((.47-ph)*60);
+    return y;
+  }
+  function drawEcg(){
+    var W=ecg.width, H=ecg.height, crit=cur.lvl>=2, arrest=cur.lvl>=3, now=Date.now()/1000;
+    ex.clearRect(0,0,W,H); ex.strokeStyle=crit?'#ff4d4d':'#00ffcc'; ex.lineWidth=2; ex.beginPath();
+    for(var x=0;x<W;x++){
+      var t=now-(W-x)/W*4, y;
+      if(arrest){ y=0.25*Math.sin(t*37)*Math.sin(t*11+1.3)+0.08*Math.sin(t*91); }
+      else { var ph=((t*cur.hr/60)%1+1)%1; y=ecgY(ph); }
+      var py=H*0.78-y*H*0.62; if(x===0) ex.moveTo(x,py); else ex.lineTo(x,py);
+    }
+    ex.stroke();
+  }
+  (function loop(){ drawEcg(); if(!reduce) requestAnimationFrame(loop); else setTimeout(loop,1000); })();
+
+  /* ---------- holographic particle heart (three.js r128) ---------- */
+  function loadScript(src){ return new Promise(function(res,rej){ var s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+  function init3D(){
+    var box=$('heartBox'), W=box.clientWidth||400, H=box.clientHeight||250;
+    var scene=new THREE.Scene(), camera=new THREE.PerspectiveCamera(75,W/H,0.1,1000), renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+    renderer.setSize(W,H); box.insertBefore(renderer.domElement,box.firstChild);
+    var group=new THREE.Group(), n=2000, pos=new Float32Array(n*3), i;
+    for(i=0;i<n*3;i+=3){ var r=1.5+(Math.random()-.5)*.5, th=Math.random()*Math.PI*2, ph=Math.acos(Math.random()*2-1); pos[i]=r*Math.sin(ph)*Math.cos(th); pos[i+1]=r*Math.sin(ph)*Math.sin(th); pos[i+2]=r*Math.cos(ph); }
+    var pg=new THREE.BufferGeometry(); pg.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    var pm=new THREE.PointsMaterial({color:0x00ffff,size:.03,transparent:true,opacity:.6}); group.add(new THREE.Points(pg,pm));
+    var wm=new THREE.MeshBasicMaterial({color:0x00ffcc,wireframe:true,transparent:true,opacity:.3}); group.add(new THREE.Mesh(new THREE.IcosahedronGeometry(1.6,2),wm));
+    var cm=new THREE.MeshBasicMaterial({color:0x00ffcc,transparent:true,opacity:.1}); group.add(new THREE.Mesh(new THREE.SphereGeometry(1,32,32),cm));
+    scene.add(group); camera.position.z=5;
+    var bpm=72, arrest=false;
+    function animate(){ requestAnimationFrame(animate); var t=Date.now()*.001, beat=arrest?1:1+Math.sin(t*(bpm/60)*Math.PI*2)*.05; group.scale.set(beat,beat,beat); if(!reduce){ group.rotation.y+=.005; group.rotation.x=Math.sin(t*.5)*.1; } renderer.render(scene,camera); }
+    animate();
+    window.updateHeart3D=function(crit,newBpm,isArrest){ bpm=newBpm; arrest=!!isArrest; var c=crit?0xff3b3b:0x00ffcc; pm.color.setHex(c); wm.color.setHex(c); cm.color.setHex(c); };
+    window.addEventListener('resize',function(){ var w=box.clientWidth,h=box.clientHeight; if(!w||!h) return; renderer.setSize(w,h); camera.aspect=w/h; camera.updateProjectionMatrix(); });
+  }
+  loadScript('libs/three.min.js').catch(function(){ return loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'); }).then(init3D).catch(function(){ $('heartMsg').style.display='flex'; });
+
+  window.__earth={apply:apply,addMsg:addMsg,cur:cur};
+})();
+</script>
+</body>
+</html>

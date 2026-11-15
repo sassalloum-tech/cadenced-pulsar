@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Find the Lost Star</title>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  --ink:#eef3ff; --muted:#b7c4e6; --card:#ffffff; --cardink:#17213b; --cardmuted:#4a5878; --line:#d5dcef;
+  --accent:#ffcf3a; --accentink:#1b2340; --good:#17794a; --goodbg:#e1f3e8; --bad:#a8402f; --badbg:#fbe6e1; --focus:#8ab4ff;
+  color-scheme:dark;
+}
+*,*::before,*::after{ box-sizing:inherit }
+html,body{ margin:0 }
+body{ min-height:100vh; color:var(--ink); font-family:"Nunito",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; line-height:1.55;
+  background:radial-gradient(ellipse at 50% -10%,#24336b 0%,#0e1a3f 45%,#050b1f 100%); overflow-x:hidden }
+.stars{ position:fixed; inset:0; pointer-events:none; z-index:0 }
+.stars i{ position:absolute; width:3px; height:3px; border-radius:50%; background:#fff; opacity:.8; animation:tw 3.5s ease-in-out infinite }
+@keyframes tw{ 0%,100%{opacity:.25; transform:scale(.8)} 50%{opacity:1; transform:scale(1.3)} }
+main,header,footer{ position:relative; z-index:1; max-width:760px; margin:0 auto; padding:0 16px }
+header{ padding-top:20px }
+h1{ margin:0; font-size:clamp(1.7rem,4.6vw,2.4rem); letter-spacing:.01em }
+.sub{ margin:2px 0 0; color:var(--muted) }
+nav{ margin:10px 0 0; font-size:.95rem }
+nav a{ color:var(--accent); font-weight:800 }
+a:focus-visible,button:focus-visible{ outline:3px solid var(--focus); outline-offset:3px }
+.track{ display:flex; align-items:center; gap:0; margin:18px 0 6px; padding:0 4px }
+.track .dot{ width:30px; height:30px; border-radius:50%; border:3px solid #6f82b8; background:#13204a; display:grid; place-items:center; font-size:.8rem; font-weight:800; flex:none }
+.track .dot.done{ background:var(--accent); border-color:var(--accent); color:var(--accentink) }
+.track .dot.now{ border-color:var(--accent); box-shadow:0 0 0 4px rgba(255,207,58,.25) }
+.track .bar{ flex:1; height:4px; background:#33477f; border-radius:4px }
+.track .bar.done{ background:var(--accent) }
+.track .star{ font-size:1.6rem; margin-left:8px; filter:drop-shadow(0 0 8px rgba(255,207,58,.7)) }
+.card{ background:var(--card); color:var(--cardink); border-radius:20px; padding:18px; margin:14px 0; box-shadow:0 10px 36px rgba(0,0,0,.4) }
+.card h2{ margin:0 0 8px; font-size:1.35rem }
+.card p{ margin:8px 0 }
+.muted{ color:var(--cardmuted) }
+.big{ font-size:1.12rem }
+.btn{ border:0; border-radius:14px; padding:12px 22px; min-height:48px; font:inherit; font-weight:800; font-size:1.05rem; cursor:pointer; background:var(--accent); color:var(--accentink) }
+.btn.quiet{ background:#e8ecf8; color:var(--cardink) }
+.btn:disabled{ opacity:.55; cursor:default }
+.choices{ display:grid; gap:10px; margin:12px 0 0 }
+.choice{ text-align:left; border:2px solid var(--line); background:#f5f7fd; color:var(--cardink); border-radius:14px; padding:12px 14px; min-height:52px; font:inherit; font-weight:700; cursor:pointer }
+.choice:hover{ border-color:#7f95d6 }
+.choice .l{ display:inline-grid; place-items:center; width:28px; height:28px; border-radius:50%; background:#dfe5f8; margin-right:10px; font-weight:800 }
+.choice.right{ border-color:var(--good); background:var(--goodbg) }
+.choice.wrong{ border-color:var(--bad); background:var(--badbg) }
+.visual{ border-radius:16px; overflow:hidden; background:linear-gradient(#0b1633,#16265a); margin:0 0 10px }
+.visual svg{ display:block; width:100%; height:auto }
+.fb{ border-radius:14px; padding:12px 14px; margin:12px 0 0 }
+.fb.good{ background:var(--goodbg); border:2px solid var(--good) }
+.fb.bad{ background:var(--badbg); border:2px solid var(--bad) }
+.fb h3{ margin:0 0 4px; font-size:1.1rem }
+.fb ol{ margin:6px 0 0; padding-left:22px }
+.fb li{ margin:6px 0 }
+.acts{ display:flex; flex-wrap:wrap; gap:10px; margin-top:14px }
+.lights{ position:relative; width:100%; aspect-ratio:16/8; border-radius:16px; overflow:hidden; background:#030614; border:2px solid #25346b }
+.lights canvas{ position:absolute; left:0; top:0; width:100%; height:100%; display:block }
+.lights .tag{ position:absolute; top:8px; font-weight:800; font-size:.85rem; background:rgba(255,255,255,.14); color:#fff; padding:2px 10px; border-radius:999px }
+.lights .t1{ left:12px } .lights .t2{ right:12px }
+table.data{ width:100%; border-collapse:collapse; margin:12px 0 0; font-size:.95rem }
+table.data th,table.data td{ border:1px solid var(--line); padding:6px 8px; text-align:left; vertical-align:top }
+table.data th{ background:#eef1fb }
+.pick{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px }
+.quote{ border-left:5px solid var(--accent); padding:6px 14px; margin:12px 0; font-size:1.08rem; background:#fff8dd; border-radius:0 12px 12px 0 }
+.tools{ display:flex; gap:10px; align-items:center; margin-top:12px; color:var(--muted); font-size:.95rem }
+footer{ padding-bottom:28px; padding-top:6px; color:var(--muted); font-size:.85rem }
+@media (prefers-reduced-motion:reduce){ .stars i{ animation:none } }
+</style>
+</head>
+<body>
+<div class="stars" id="stars" aria-hidden="true"></div>
+<header>
+  <h1>🌟 Find the Lost Star</h1>
+  <p class="sub">A medical riddle game from ASCIS · for astronauts of every age</p>
+  <nav><a href="index.html">Back to the monitor</a> · <a href="summit-trail.html">Play Summit Trail</a></nav>
+</header>
+
+<main>
+  <div class="track" id="track" aria-label="Progress" role="img"></div>
+  <div id="stage"></div>
+  <div class="tools"><label><input type="checkbox" id="snd" checked> Sound</label></div>
+</main>
+
+<footer>
+  <p>Prototype for the NASA Space Apps Challenge. The riddles are simple first-aid ideas for learning, not medical advice. Text and code were developed with AI assistance and reviewed by the team physician.</p>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+  function $(id){ return document.getElementById(id); }
+  var stage=$('stage'), track=$('track'), sndEl=$('snd');
+  var reduce=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // twinkling background stars
+  var st=$('stars'), i; for(i=0;i<48;i++){ var s=document.createElement('i'); s.style.left=(Math.random()*100)+'%'; s.style.top=(Math.random()*100)+'%'; s.style.animationDelay=(Math.random()*3.5).toFixed(2)+'s'; s.style.width=s.style.height=(2+Math.random()*2.5).toFixed(1)+'px'; st.appendChild(s); }
+
+  // sound: made with the browser's own audio, no files
+  var AC=null;
+  function audio(){ if(!sndEl.checked) return null; try{ var C=window.AudioContext||window.webkitAudioContext; if(!C) return null; if(!AC) AC=new C(); if(AC.state==='suspended') AC.resume(); return AC; }catch(e){ return null; } }
+  function tone(f,dur,type,t0,vol,slideTo){ var a=audio(); if(!a) return; var t=a.currentTime+(t0||0), o=a.createOscillator(), g=a.createGain(); o.type=type||'sine'; o.frequency.setValueAtTime(f,t); if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo,t+dur); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.08,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+dur+0.05); }
+  var SFX={
+    good:function(){ [659,784,1047].forEach(function(f,k){ tone(f,0.16,'triangle',k*0.09,0.09); }); },
+    bad:function(){ tone(220,0.3,'square',0,0.04,150); },
+    next:function(){ tone(880,0.1,'sine',0,0.05); },
+    win:function(){ [523,659,784,1047,784,1047,1319].forEach(function(f,k){ tone(f,0.2,'triangle',k*0.13,0.1); }); }
+  };
+  function sfx(n){ if(sndEl.checked) SFX[n](); }
+
+  var STAGES=[
+    { title:'Stage 1: The Leaking Suit', visual:'suit',
+      riddle:'You are on a spacewalk and your suit gets a small leak. What do you do first?',
+      choices:['Take off your helmet to look at the hole','Tell your partner immediately and head to the airlock','Ignore it and finish your work'], right:1,
+      hint:'Think about who is with you, and how much air your backpack holds.',
+      steps:['<b>Stop and tell your buddy.</b> Spacewalks are done in pairs, so your partner needs to know right away.',
+             '<b>Head back immediately.</b> Do not try to fix the suit or finish your work. Your backpack has limited air, so go straight to the airlock.',
+             '<b>Stay calm.</b> Let your partner guide you back safely.'] },
+    { title:'Stage 2: The Broken Bone', visual:'arm',
+      riddle:'Your friend fell in zero gravity and broke their arm. What should you NOT do?',
+      choices:['Keep the arm completely still','Try to push the bone back into place','Make a splint using a stiff object'], right:1,
+      hint:'One of these could hurt your friend more. Which one?',
+      steps:['<b>Never push a bone back in.</b> You could cause permanent damage.',
+             '<b>Make a splint.</b> Use something stiff, like a rolled-up magazine or a metal piece, and tie it to the arm so it cannot move.',
+             '<b>Check the fingers.</b> Make sure the bandage is not too tight. The fingers should not be cold or numb.',
+             '<b>Radio Mission Control.</b> Call Earth for medical advice and get ready for an emergency return.'] },
+    { title:'Stage 3: The Toothache', visual:'tooth',
+      riddle:'You have a terrible toothache in space. There is no dentist, so what is a safe thing to do?',
+      choices:['Rinse with warm salt water and use a cold pack on your cheek','Put a pain pill directly on your gum','Try to pull the tooth out yourself'], right:0,
+      hint:'Choose the gentle option that does not hurt your mouth more.',
+      steps:['<b>Rinse with warm salt water.</b> This helps clean the area and ease the soreness.',
+             '<b>Use a cold pack.</b> Wrap it in a cloth and hold it on your cheek for about 15 minutes to help with the pain.',
+             '<b>Take safe pain medicine.</b> Use space-approved medicine from the medical kit. Never put a pill directly on your gum, because it can burn.',
+             '<b>Radio Mission Control.</b> Tell the doctors on Earth. They will guide you, and you may need to eat only soft foods until you return home.'] }
+  ];
+
+  var SVGS={
+    suit:'<svg viewBox="0 0 640 220" role="img" aria-label="A space glove with a tiny hole and air hissing out"><defs><radialGradient id="g1" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#cfd8ea"/></radialGradient></defs>'+
+      '<g fill="#fff" opacity=".8"><circle cx="60" cy="40" r="2"/><circle cx="150" cy="170" r="2.4"/><circle cx="560" cy="50" r="2"/><circle cx="500" cy="180" r="2.4"/><circle cx="330" cy="30" r="1.8"/></g>'+
+      '<rect x="120" y="92" width="150" height="56" rx="26" fill="url(#g1)" stroke="#9fb0d6" stroke-width="3"/><rect x="258" y="70" width="170" height="100" rx="40" fill="url(#g1)" stroke="#9fb0d6" stroke-width="3"/>'+
+      '<rect x="420" y="88" width="30" height="64" rx="8" fill="#e07b3c"/><path d="M300 118 q8 -4 14 0" stroke="#9fb0d6" stroke-width="3" fill="none"/>'+
+      '<circle cx="330" cy="104" r="7" fill="#0b1633"/><g stroke="#bfe6ff" stroke-width="3" stroke-linecap="round" fill="none" opacity=".9"><path d="M338 98 q30 -26 62 -34"/><path d="M340 104 q38 -10 76 -6"/><path d="M338 110 q30 22 62 28"/></g>'+
+      '<text x="430" y="40" fill="#bfe6ff" font-size="18" font-weight="800" font-family="system-ui">hisss…</text></svg>',
+    arm:'<svg viewBox="0 0 640 220" role="img" aria-label="An astronaut holding a bent arm"><g fill="#fff" opacity=".8"><circle cx="70" cy="46" r="2"/><circle cx="580" cy="40" r="2.4"/><circle cx="520" cy="190" r="2"/></g>'+
+      '<circle cx="250" cy="70" r="40" fill="#e8eefc" stroke="#9fb0d6" stroke-width="4"/><rect x="228" y="62" width="44" height="24" rx="12" fill="#1b2a5a"/>'+
+      '<rect x="205" y="112" width="90" height="90" rx="24" fill="#e8eefc" stroke="#9fb0d6" stroke-width="4"/>'+
+      '<path d="M295 132 L350 118 L388 78" fill="none" stroke="#e8eefc" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/><path d="M295 132 L350 118 L388 78" fill="none" stroke="#9fb0d6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 14"/>'+
+      '<path d="M205 140 L170 168" stroke="#e8eefc" stroke-width="26" stroke-linecap="round"/>'+
+      '<path d="M360 104 l18 -26 M352 120 l30 -8" stroke="#ff6b5e" stroke-width="4" stroke-linecap="round"/><text x="410" y="70" fill="#ffd0ca" font-size="20" font-weight="800" font-family="system-ui">Ouch!</text></svg>',
+    tooth:'<svg viewBox="0 0 640 220" role="img" aria-label="An astronaut rubbing their cheek because of a toothache"><g fill="#fff" opacity=".8"><circle cx="80" cy="50" r="2"/><circle cx="560" cy="60" r="2.4"/><circle cx="470" cy="190" r="2"/></g>'+
+      '<circle cx="300" cy="110" r="78" fill="#e8eefc" stroke="#9fb0d6" stroke-width="5"/><rect x="238" y="82" width="124" height="52" rx="26" fill="#1b2a5a"/>'+
+      '<path d="M262 160 q38 18 76 0" fill="none" stroke="#1b2a5a" stroke-width="5" stroke-linecap="round"/><circle cx="352" cy="146" r="22" fill="#ffd9c9" stroke="#c98d73" stroke-width="3"/>'+
+      '<path d="M385 122 l20 -14 M392 142 l26 -2 M384 160 l20 12" stroke="#ff6b5e" stroke-width="4" stroke-linecap="round"/><text x="425" y="116" fill="#ffd0ca" font-size="20" font-weight="800" font-family="system-ui">Owww!</text></svg>'
+  };
+
+  var state={n:0, phase:'intro', realLeft:true};
+
+  function el(tag,cls,html){ var e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; }
+  function renderTrack(){
+    var labels=['1','2','3','★'], h='', k;
+    var done=state.phase==='end'?4:(state.phase==='intro'?0:(state.phase==='final'?3:Math.max(state.n,state.solved||0)));
+    for(k=0;k<4;k++){
+      var cls='dot'+(k<done?' done':'')+((k===done&&state.phase!=='end')?' now':'');
+      h+='<span class="'+cls+'">'+(k<done?'✓':labels[k])+'</span>'+(k<3?'<span class="bar'+(k<done?' done':'')+'"></span>':'');
+    }
+    h+='<span class="star" aria-hidden="true">🌟</span>';
+    track.innerHTML=h;
+    track.setAttribute('aria-label','Progress: '+done+' of 4 steps done');
+  }
+  function clear(){ stage.innerHTML=''; stopLights(); }
+
+  function showIntro(){
+    state.phase='intro'; state.n=0; state.solved=0; clear(); renderTrack();
+    var c=el('section','card');
+    c.innerHTML='<h2>✨ How I got inspired 🌠</h2>'+
+      '<p class="big">Even though I am a science professional, I still believe in the magic of shooting stars! 🌌 Every time I see one, I make a wish. Some came true, and some… didn’t. 😅</p>'+
+      '<p class="big">But here is a fun science fact: not every streak of light in the night sky is a shooting star! 🔭 A real meteor is a fast, short streak of light. Burning space junk usually lasts longer, breaks apart, and can glow orange or green. 🛰️🔥</p>'+
+      '<p class="big">So maybe some wishes that did not come true were made on burning space junk! 🤭</p>'+
+      '<p class="big">This inspired my game. To make real wishes come true, you cannot just rely on the dark. <b>You have to fill yourself with knowledge!</b> 🧠✨ Knowledge helps you tell a true, steady light from fake, burning trash.</p>'+
+      '<div class="quote"><b>The story:</b> A curious little star wanted to explore a black hole all by herself. She got lost in the deep, dark universe. Now a team of astronauts must solve medical riddles to find her. At the very end, they will find two identical lights. Only one is the real star.</div>'+
+      '<div class="acts"><button class="btn" id="go" type="button">Start the mission 🚀</button></div>';
+    stage.appendChild(c);
+    $('go').addEventListener('click',function(){ sfx('next'); showStage(0); });
+  }
+
+  function showStage(n){
+    state.phase='stage'; state.n=n; clear(); renderTrack();
+    var S=STAGES[n], c=el('section','card');
+    c.innerHTML='<h2>'+S.title+'</h2><div class="visual">'+SVGS[S.visual]+'</div><p class="big"><b>'+S.riddle+'</b></p>';
+    var ch=el('div','choices'); ch.setAttribute('role','group'); ch.setAttribute('aria-label','Choices');
+    S.choices.forEach(function(t,k){
+      var b=el('button','choice','<span class="l">'+'ABC'.charAt(k)+'</span>'+t); b.type='button';
+      b.addEventListener('click',function(){ pick(S,k,b,ch,c); }); ch.appendChild(b);
+    });
+    c.appendChild(ch); var fb=el('div'); fb.id='fb'; fb.setAttribute('aria-live','polite'); c.appendChild(fb); stage.appendChild(c);
+  }
+  function pick(S,k,btn,ch,card){
+    var fb=$('fb');
+    if(k!==S.right){
+      sfx('bad'); btn.className+=' wrong'; btn.disabled=true;
+      fb.className='fb bad'; fb.innerHTML='<h3>Not quite. Try again!</h3><p>Hint: '+S.hint+'</p>'; return;
+    }
+    sfx('good'); btn.className+=' right';
+    Array.prototype.forEach.call(ch.children,function(b){ b.disabled=true; });
+    fb.className='fb good'; fb.innerHTML='<h3>Correct! ⭐ You are closer to the lost star.</h3><p><b>Space steps:</b></p><ol>'+S.steps.map(function(t){ return '<li>'+t+'</li>'; }).join('')+'</ol>';
+    var a=el('div','acts'); var nb=el('button','btn',state.n<2?'Next riddle ➜':'Go to the final challenge ➜'); nb.type='button';
+    nb.addEventListener('click',function(){ sfx('next'); if(state.n<2) showStage(state.n+1); else showFinal(); }); a.appendChild(nb); card.appendChild(a);
+    state.solved=state.n+1; renderTrack();
+  }
+
+  // ---------- the two lights ----------
+  var raf=0, lightsT0=0;
+  function stopLights(){ if(raf){ cancelAnimationFrame(raf); raf=0; } }
+  function showFinal(){
+    state.phase='final'; state.n=3; clear(); renderTrack(); state.realLeft=Math.random()<0.5;
+    var c=el('section','card');
+    c.innerHTML='<h2>🚨 Final Challenge: The Two Lights</h2>'+
+      '<p class="big"><b>Mission Control says the star is glowing bright, but a piece of burning space junk nearby is tricking your sensors! Which one is the real star?</b></p>'+
+      '<div class="lights" id="lights"><canvas id="cv" width="800" height="400" role="img" aria-label="Two lights in a dark sky. Watch how each one moves."></canvas><span class="tag t1">Light 1</span><span class="tag t2">Light 2</span></div>'+
+      '<p class="muted" style="margin:8px 0 0">Watch for a few seconds. The animation repeats.</p>'+
+      '<p><b>Use your science clues:</b></p><ol style="margin:4px 0 0; padding-left:22px">'+
+      '<li><b>Motion.</b> A real star stays in place, or drifts very slowly. Burning space junk races across the sky in seconds.</li>'+
+      '<li><b>Pieces.</b> A real star is one clean light. Burning junk breaks into a fiery cluster of glowing pieces.</li>'+
+      '<li><b>Glow.</b> A real star shines steadily. Burning junk flickers and changes color as different materials burn. Real stars also come in many colors, so never use color alone.</li></ol>'+
+      '<div class="pick"><button class="btn" id="p1" type="button">Light 1 is the star</button><button class="btn" id="p2" type="button">Light 2 is the star</button></div><div id="fb" aria-live="polite"></div>';
+    stage.appendChild(c); startLights();
+    $('p1').addEventListener('click',function(){ finalPick(true); }); $('p2').addEventListener('click',function(){ finalPick(false); });
+  }
+  function startLights(){
+    var cv=$('cv'), x=cv.getContext('2d'), W=800, H=400, junk=[], t0=0;
+    function frame(ts){
+      raf=requestAnimationFrame(frame); if(!t0) t0=ts; var t=(ts-t0)/1000, cyc=t%6;
+      x.clearRect(0,0,W,H); x.fillStyle='#030614'; x.fillRect(0,0,W,H);
+      var k; for(k=0;k<70;k++){ var sx=(k*137.5)%W, sy=(k*89.3)%H; x.fillStyle='rgba(255,255,255,'+(0.15+0.25*((k*7)%5)/5)+')'; x.fillRect(sx,sy,1.6,1.6); }
+      var leftX=200, rightX=600, starX=(state.realLeft?leftX:rightX), junkX=(state.realLeft?rightX:leftX);
+      // the real star: steady, drifts very slowly
+      var sxp=starX+Math.sin(t*0.12)*4, syp=190+Math.cos(t*0.1)*3, tw=0.92+0.08*Math.sin(t*2.1);
+      var g=x.createRadialGradient(sxp,syp,0,sxp,syp,46); g.addColorStop(0,'rgba(255,252,235,'+tw+')'); g.addColorStop(0.25,'rgba(255,240,190,.55)'); g.addColorStop(1,'rgba(255,240,190,0)'); x.fillStyle=g; x.beginPath(); x.arc(sxp,syp,46,0,6.283); x.fill();
+      x.fillStyle='#fff'; x.beginPath(); x.arc(sxp,syp,6,0,6.283); x.fill();
+      // the junk: races across, breaks into pieces, flickers and changes color
+      var p=Math.min(1,cyc/2.6), jx0=junkX-150, jx1=junkX+150, jy0=70, jy1=290;
+      if(cyc<3.6){
+        var hx=jx0+(jx1-jx0)*p, hy=jy0+(jy1-jy0)*p, cols=['#ff9a3c','#7dff9a','#6fb7ff','#ffd24d'];
+        var pieces=p<0.35?1:(p<0.6?2:5), q;
+        for(q=0;q<pieces;q++){
+          var spread=(q===0?0:(q*7)), off=(q%2?1:-1)*spread*p*2.2, bx=hx-q*10*p, by=hy+off;
+          var col=cols[(Math.floor(t*9)+q)%cols.length], fl=0.55+0.45*Math.abs(Math.sin(t*23+q*2));
+          var tail=x.createLinearGradient(bx,by,bx-70,by-48*(1+0)); tail.addColorStop(0,col); tail.addColorStop(1,'rgba(255,120,40,0)');
+          x.globalAlpha=fl; x.strokeStyle=tail; x.lineWidth=5-q*0.5; x.lineCap='round'; x.beginPath(); x.moveTo(bx,by); x.lineTo(bx-70*(0.6+0.4*fl),by-48*(0.6+0.4*fl)); x.stroke();
+          x.fillStyle=col; x.beginPath(); x.arc(bx,by,6-q*0.5,0,6.283); x.fill(); x.globalAlpha=1;
+        }
+      }
+    }
+    if(reduce){ // a still picture instead of motion
+      var cvx=x; cvx.fillStyle='#030614'; cvx.fillRect(0,0,W,H); var sx=state.realLeft?200:600, jx=state.realLeft?600:200;
+      var gg=cvx.createRadialGradient(sx,190,0,sx,190,46); gg.addColorStop(0,'rgba(255,252,235,1)'); gg.addColorStop(1,'rgba(255,240,190,0)'); cvx.fillStyle=gg; cvx.beginPath(); cvx.arc(sx,190,46,0,6.283); cvx.fill();
+      ['#ff9a3c','#7dff9a','#6fb7ff','#ffd24d','#ff9a3c'].forEach(function(c,q){ cvx.fillStyle=c; cvx.beginPath(); cvx.arc(jx-60+q*30,120+q*22,6,0,6.283); cvx.fill(); });
+      return;
+    }
+    raf=requestAnimationFrame(frame);
+  }
+  function finalPick(leftChosen){
+    var right=(leftChosen===state.realLeft), fb=$('fb');
+    if(!right){
+      sfx('bad'); fb.className='fb bad'; fb.innerHTML='<h3>Look again!</h3><p>The star stays put and shines steadily. The junk races across the sky, breaks into pieces and flickers. Which light does that?</p>'; return;
+    }
+    sfx('win'); $('p1').disabled=true; $('p2').disabled=true; stopLights();
+    fb.className='fb good'; fb.innerHTML='<h3>You found her! ⭐</h3><p>The real star is the single light that stays in place and shines steadily. The other light was burning space junk.</p><div class="acts"><button class="btn" id="fin" type="button">Hear what the star says ➜</button></div>';
+    $('fin').addEventListener('click',showEnd);
+  }
+
+  function showEnd(){
+    state.phase='end'; clear(); renderTrack();
+    var c=el('section','card');
+    c.innerHTML='<h2>🎯 Mission complete!</h2>'+
+      '<div class="quote">“Thank you for finding me! I learned something very important today. Even if you are made of light, the dark can swallow you if you wander too close. You must fill yourself with knowledge. That is how you become heavy enough to glow brightly and never get lost.”</div>'+
+      '<p class="big"><b>What it means:</b> Even a bright star can get lost in the dark. But if you <b>fill yourself with knowledge</b>, like how to stay safe, how to help others, and how to tell what is real from what is fake, you become stronger. Then the darkness cannot swallow you. You will always shine from the inside out. 🌟</p>'+
+      '<div class="acts"><button class="btn" id="again" type="button">Play again</button><a class="btn quiet" href="index.html" style="text-decoration:none; display:inline-flex; align-items:center">Back to the monitor</a></div>';
+    stage.appendChild(c); sfx('win');
+    $('again').addEventListener('click',showIntro);
+  }
+
+  window.__lostStar={state:state,showIntro:showIntro,showStage:showStage,showFinal:showFinal};
+  showIntro();
+})();
+</script>
+</body>
+</html>

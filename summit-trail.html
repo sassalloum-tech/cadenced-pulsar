@@ -84,7 +84,7 @@ button{font:inherit; cursor:pointer}
 .foot{margin:22px 0 0; font-size:.9rem; color:var(--muted); max-width:70ch}
 
 @media (prefers-reduced-motion:reduce){
-  #token{transition:none !important}
+  .tok{transition:none !important}
 }
 .aitagart{position:absolute; left:10px; bottom:8px; z-index:2; font-size:.74rem; font-weight:800; padding:3px 10px; border-radius:999px; background:rgba(0,0,0,.6); color:#fff; pointer-events:none}
 
@@ -93,22 +93,59 @@ button{font:inherit; cursor:pointer}
 @keyframes ringPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(1.28)}}
 @keyframes cloudDrift{from{transform:translateX(-260px)}to{transform:translateX(1260px)}}
 @keyframes snowFall{from{transform:translate(0,-12px)}to{transform:translate(18px,590px)}}
-#token circle{transform-box:fill-box; transform-origin:center}
-#token circle:nth-child(2){animation:tokenPulse 1.4s ease-in-out infinite}
-#token circle:nth-child(1){animation:ringPulse 1.4s ease-in-out infinite}
+.tok circle{transform-box:fill-box; transform-origin:center}
+.tok.active circle:nth-child(2){animation:tokenPulse 1.4s ease-in-out infinite}
+.tok.active circle:nth-child(1){animation:ringPulse 1.4s ease-in-out infinite}
 #fx{pointer-events:none}
 #fx .cloud{fill:#ffffff; fill-opacity:.30; animation:cloudDrift linear infinite}
 #fx .flake{fill:#ffffff; fill-opacity:.85; animation:snowFall linear infinite}
-@media (prefers-reduced-motion:reduce){ #token circle{animation:none !important} #fx{display:none} }
+@media (prefers-reduced-motion:reduce){ .tok circle{animation:none !important} #fx{display:none} }
+.how{margin:12px 0; padding:10px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface)}
+.how summary{font-weight:800; cursor:pointer}
+.how ol{margin:8px 0 6px; padding-left:22px}
+.how p{margin:6px 0 0; color:var(--muted)}
+.turns{display:flex; flex-wrap:wrap; gap:10px 14px; align-items:center; margin:14px 0 0; font-weight:700}
+.turns .pl{display:inline-flex; align-items:center; gap:8px; padding:6px 14px; border:2px solid var(--line); border-radius:999px; background:var(--surface)}
+.turns .pl.on{border-color:var(--accent); box-shadow:0 0 0 3px rgba(31,107,76,.2)}
+.turns .dot{width:15px; height:15px; border-radius:50%; border:2px solid #17241d}
+
+.tune input[type=text]{padding:6px 10px; border:2px solid var(--line); border-radius:10px; background:var(--surface); color:var(--ink); font:inherit; width:9.5em}
+dialog#prize{border:0; border-radius:20px; padding:0; max-width:min(640px,94vw); width:100%; background:var(--surface); color:var(--ink); box-shadow:0 18px 60px rgba(0,0,0,.45)}
+dialog#prize::backdrop{background:rgba(5,12,9,.6)}
+.pz{padding:18px 18px 16px}
+.pz h2{margin:0 0 4px; font-size:1.4rem}
+.pz .pz-sub{margin:0 0 12px; color:var(--muted)}
+.card-wrap{position:relative; width:100%; aspect-ratio:16/9; border-radius:18px; overflow:hidden; border:4px solid #fff; box-shadow:0 6px 22px rgba(0,0,0,.3); background:#bfe8f5}
+.card-wrap svg, .card-wrap canvas{position:absolute; left:0; top:0; width:100%; height:100%; display:block}
+#scratch{touch-action:none; cursor:grab}
+.pz-text{position:absolute; left:0; right:0; bottom:9%; text-align:center; padding:0 16px; pointer-events:none}
+.pz-text span{display:inline-block; background:rgba(255,255,255,.88); color:#17323f; border-radius:14px; padding:8px 16px; font-weight:800; font-size:clamp(.95rem,2.6vw,1.2rem); line-height:1.3; max-width:94%}
+.pz-text small{display:block; font-size:.78rem; font-weight:700; color:#3b6075; margin-bottom:2px; text-transform:uppercase; letter-spacing:.04em}
+.pz-acts{display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; justify-content:flex-end}
+@media (prefers-reduced-motion:reduce){ #scratch{transition:none !important} }
 </style>
 </head>
 <body>
 <main>
   <h1>Summit Trail</h1>
-  <p class="lede">A solo game from ASCIS that teaches astronauts to know their own numbers. Climb from square 1 to the summit at 100. Ladders are good readings and habits. Snakes are the slips that cost you ground.</p>
+  <p class="lede">A game from ASCIS for two players (or one) that teaches astronauts to know their own numbers. Climb from square 1 to the summit at 100. Ladders are good readings and habits. Snakes are the slips that cost you ground.</p>
+  <details class="how" open>
+    <summary>How to play</summary>
+    <ol>
+      <li>Two players take turns, <b>Player 1</b> first. Switch off "Two players" to play alone.</li>
+      <li>On your turn press <b>Roll the dice</b>. Your token climbs square by square from 1 toward the summit at 100.</li>
+      <li>Land on the bottom of a <b>ladder</b> to climb: a good reading or habit lifts you up.</li>
+      <li>Land on the head of a <b>snake</b> to slide down: a missed warning or a risky habit costs ground.</li>
+      <li>After each ladder or snake, read the short message. It teaches one habit.</li>
+      <li>You need an <b>exact roll</b> to land on 100. The first player to land on it wins a <b>scratch card</b> with their name on it: scratch it to reveal a treat.</li>
+      <li>Hover over or tap any square to read a short fact about it. Landing on a plain square shows its fact too.</li>
+      <li><b>Reset board</b> starts again. The <b>Sound</b> box switches the sound effects on or off.</li>
+    </ol>
+    <p>It works offline and saves nothing, so it can teach even when the radio is silent.</p>
+  </details>
 
   <div class="board-wrap">
-    <span class="aitagart">AI-generated artwork</span>
+    <span class="aitagart">SI-generated artwork (SI = synthetic intelligence, AI)</span>
     <div class="board-scroll">
       <svg id="board" viewBox="0 0 1000 560" role="img" aria-label="Snakes and ladders board numbered 1 to 100 over a mountain landscape">
         <rect id="plainbg" x="0" y="0" width="1000" height="560" fill="#1b2a22"/>
@@ -123,14 +160,21 @@ button{font:inherit; cursor:pointer}
         <g id="snakes"></g>
         <g id="nums"></g>
         <g id="caps"></g>
-        <g id="token" style="transform:translate(0px,0px)">
+        <g id="token" class="tok active" style="transform:translate(0px,0px)">
           <circle r="16" fill="none" stroke="#ffffff" stroke-width="3"/>
           <circle r="11" fill="#ffcf3a" stroke="#17241d" stroke-width="3.5"/>
-          <circle r="3.6" fill="#17241d"/>
+          <text y="4.6" text-anchor="middle" font-size="13" font-weight="800" fill="#17241d" style="pointer-events:none">1</text>
+        </g>
+        <g id="token2" class="tok" style="transform:translate(0px,0px)">
+          <circle r="16" fill="none" stroke="#ffffff" stroke-width="3"/>
+          <circle r="11" fill="#4cc9f0" stroke="#17241d" stroke-width="3.5"/>
+          <text y="4.6" text-anchor="middle" font-size="13" font-weight="800" fill="#17241d" style="pointer-events:none">2</text>
         </g>
       </svg>
     </div>
   </div>
+
+  <div class="turns" id="turns" aria-live="polite"></div>
 
   <div class="controls">
     <button class="btn-primary" id="roll" type="button">Roll the dice</button>
@@ -143,6 +187,14 @@ button{font:inherit; cursor:pointer}
       <label class="slider">Scenery brightness
         <input type="range" id="bright" min="0" max="100" value="75">
       </label>
+      <label class="slider">Player 1 name
+        <input type="text" id="n1" maxlength="14" placeholder="Player 1" autocomplete="off">
+      </label>
+      <label class="slider">Player 2 name
+        <input type="text" id="n2" maxlength="14" placeholder="Player 2" autocomplete="off">
+      </label>
+      <label class="check"><input type="checkbox" id="two" checked> Two players</label>
+      <label class="check"><input type="checkbox" id="snd" checked> Sound</label>
       <label class="check"><input type="checkbox" id="plain"> Plain background</label>
     </div>
   </div>
@@ -159,6 +211,43 @@ button{font:inherit; cursor:pointer}
   </p>
   <p class="foot">Prototype. The board, numbering and controls are working; the ladder and snake messages are placeholder text for clinical review.</p>
 </main>
+
+<dialog id="prize" aria-labelledby="pz-t">
+  <div class="pz">
+    <h2 id="pz-t">You reached the summit!</h2>
+    <p class="pz-sub">Scratch the silver card with your finger or mouse to win a treat.</p>
+    <div class="card-wrap" id="cardWrap">
+      <svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="bsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fcdf0"/><stop offset="1" stop-color="#dff4fb"/></linearGradient>
+            <linearGradient id="bsea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f9bc4"/><stop offset="1" stop-color="#7fdbe6"/></linearGradient>
+            <linearGradient id="bsand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4e2b0"/><stop offset="1" stop-color="#e4c487"/></linearGradient>
+            <radialGradient id="bsun" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff6c9"/><stop offset="1" stop-color="#fff6c9" stop-opacity="0"/></radialGradient>
+          </defs>
+          <rect width="640" height="360" fill="url(#bsky)"/>
+          <circle cx="500" cy="82" r="70" fill="url(#bsun)"/><circle cx="500" cy="82" r="30" fill="#ffe27a"/>
+          <ellipse cx="150" cy="70" rx="62" ry="15" fill="#fff" opacity=".85"/><ellipse cx="190" cy="58" rx="40" ry="12" fill="#fff" opacity=".85"/>
+          <ellipse cx="330" cy="104" rx="50" ry="11" fill="#fff" opacity=".7"/>
+          <rect y="168" width="640" height="104" fill="url(#bsea)"/>
+          <path d="M0 196 Q40 186 80 196 T160 196 T240 196 T320 196 T400 196 T480 196 T560 196 T640 196" fill="none" stroke="#e8fbff" stroke-width="3" opacity=".7"/>
+          <path d="M0 226 Q50 216 100 226 T200 226 T300 226 T400 226 T500 226 T600 226 T700 226" fill="none" stroke="#e8fbff" stroke-width="3" opacity=".55"/>
+          <path d="M0 262 Q160 236 320 258 T640 250 L640 360 L0 360 Z" fill="url(#bsand)"/>
+          <path d="M0 262 Q160 236 320 258 T640 250" fill="none" stroke="#fff" stroke-width="5" opacity=".75"/>
+          <path d="M92 330 Q96 270 118 214" fill="none" stroke="#7a5230" stroke-width="9" stroke-linecap="round"/>
+          <path d="M118 214 Q84 190 52 206 M118 214 Q108 178 76 168 M118 214 Q132 176 166 172 M118 214 Q150 192 186 210 M118 214 Q118 188 130 160" fill="none" stroke="#2f8f4f" stroke-width="9" stroke-linecap="round"/>
+          <circle cx="440" cy="318" r="9" fill="#f6c9b8"/><circle cx="470" cy="332" r="6" fill="#fff0e4"/><circle cx="560" cy="306" r="7" fill="#f2b9a6"/>
+        </svg>
+      <div class="pz-text"><span><small>Your treat</small><b id="pz-treat"></b></span></div>
+      <canvas id="scratch" width="640" height="360" role="img" aria-label="Silver scratch card with the winner's name"></canvas>
+    </div>
+    <p id="pz-live" class="sr-only" role="status" aria-live="polite" style="position:absolute; left:-9999px"></p>
+    <div class="pz-acts">
+      <button class="btn-quiet" id="pz-reveal" type="button">Reveal without scratching</button>
+      <button class="btn-quiet" id="pz-close" type="button">Close</button>
+      <button class="btn-primary" id="pz-again" type="button">Play again</button>
+    </div>
+  </div>
+</dialog>
 
 <script>
 (function(){
@@ -185,6 +274,14 @@ button{font:inherit; cursor:pointer}
     95:['A medication dose went ahead without confirmation.','Recommend, then confirm. Every dose.'],
     98:['The message to Earth was never queued.','Queue it. The link will come back.']
   };
+  var TIPS=["In orbit, 24-hour blood pressure ran about 8 to 10 mmHg lower than before launch (Norsk et al., 2015).","Resting core temperature rose by about 1 °C over six months on the ISS (Stahn et al., 2017).","Normal vitals with symptoms never rule out a heart attack. Keep the heart pathway open.","Troponin, an ECG and an ultrasound are the tools NASA lists for acute coronary syndrome in flight.","Know your own baseline. ASCIS compares you with you, not with a textbook.","Check signal quality first. A loose sensor can fake an alarm.","On a Mars mission, a radio message can take up to about 22 minutes each way.","High cabin CO₂ can cause a headache and a racing heart. Check the air first.","Slow breathing, in for 4 and out for 6, can steady a racing heart and change a reading.","A rising heart-rate trend matters more than one number. Watch the trend.","Tell the crew about a new symptom right away. Early reports start help sooner.","Aspirin 325 mg tablets are on the ISS medical kit. Check for an allergy or G6PD deficiency first.","Nitroglycerin is on the ISS kit. It is held when the systolic pressure is below 90.","Face, eyelid or neck swelling with a headache can mean a clot in a neck vein, a known spaceflight risk.","Fluids shift toward the head in microgravity. That can change blood pressure and how you feel.","Daily exercise protects bones, muscles and the heart in microgravity. Log it.","Bones lose density in space. Resistive exercise and calcium checks help track it.","Sleep matters. About 7 hours keeps readings and decisions honest.","Log caffeine. It can skew a baseline reading.","A skipped reading leaves a gap that hides trends.","Recommend, then confirm. Every dose needs a person to confirm it.","The pump counts down for ten seconds so a person can press STOP.","Chest pain that spreads to the arm, jaw or back, or comes with a cold sweat, needs urgent attention.","Panic can feel like a heart attack, but anxiety never rules a heart problem out.","In our concept, a stabilization web holds the patient still for cleaner scans and safer CPR.","NASA's form assigns return to definitive care to every acute coronary syndrome case, so plan the return early.","Check the radiation dose rate. A solar storm can raise it fast.","Exercise heats you faster in orbit. Watch your temperature.","The Simple Risk Index is heart rate × (age ÷ 10)² ÷ systolic pressure. 34 or more, with SpO₂ at 94% or lower, marked the highest risk in heart attack patients.","Low oxygen saturation (94% or lower) with a fast heart needs a check of the air and the heart.","A CPR device can start by itself when it detects cardiac arrest, after a short countdown you can cancel.","After a scare, monitor for 24 hours: repeat the ECG, troponin and ultrasound.","Your mood and sleep logs are private to you unless you choose to share them.","Your emergency proxy can answer questions for you if you cannot.","The black-box log keeps every alert and action, even when the link to Earth is down.","Messages for Earth are queued when the link is down and sent when it returns."];
+  function tipFor(n){
+    if(n===1) return 'Start: know your own baseline before you climb.';
+    if(n===100) return 'Summit: every reading logged, every warning heard.';
+    if(LADDERS[n]) return '▲ Ladder up to '+LADDERS[n]+'. '+NOTES[n][0]+' '+NOTES[n][1];
+    if(SNAKES[n]) return '▼ Snake down to '+SNAKES[n]+'. '+NOTES[n][0]+' '+NOTES[n][1];
+    return TIPS[(n-1)%TIPS.length];
+  }
   var PALETTE=[
     {body:'#d9503f', stripe:'#2f6fb5'},
     {body:'#7cc242', stripe:'#f2d33b'},
@@ -213,8 +310,12 @@ button{font:inherit; cursor:pointer}
   // Cells with alternating tint for contrast
   for(var r=0;r<10;r++){
     for(var c=0;c<10;c++){
-      mk('rect',{x:X0+c*CW, y:Y0+r*CH, width:CW, height:CH,
+      var rc=mk('rect',{x:X0+c*CW, y:Y0+r*CH, width:CW, height:CH,
         fill:((r+c)%2===0)?'rgba(255,255,255,.18)':'rgba(0,0,0,.24)'},cells);
+      var rr=9-r, cc=(rr%2===1)?9-c:c, nn=rr*10+cc+1;
+      mk('title',{},rc).textContent='Square '+nn+': '+tipFor(nn);
+      rc.style.cursor='help';
+      rc.addEventListener('click',(function(k){ return function(){ if(!busy) say('plain','Square '+k,tipFor(k),'Tap or hover over any square to read its fact.'); }; })(nn));
     }
   }
   // Grid lines: dark halo under white line so they read on any background
@@ -300,15 +401,53 @@ button{font:inherit; cursor:pointer}
   plain.addEventListener('change',applyLook);
   applyLook();
 
-  // Game
-  var rollBtn=$('roll'), resetBtn=$('reset'), diceEl=$('dice'), msg=$('msg');
+  // Game: two players (or one) and sound effects
+  var rollBtn=$('roll'), resetBtn=$('reset'), diceEl=$('dice'), msg=$('msg'), turnsEl=$('turns'), twoEl=$('two'), sndEl=$('snd');
+  var toks=[$('token'),$('token2')], COLORS=['#ffcf3a','#4cc9f0'];
   var reduce=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var pos=1, busy=false;
+  var pos=[1,1], shown=[1,1], cur=0, busy=false, over=false;
+  function nPlayers(){ return twoEl.checked?2:1; }
+  var n1El=$('n1'), n2El=$('n2');
+  function pname(i){ var v=((i===0?n1El:n2El).value||'').trim(); return v?v:(nPlayers()===1?'You':'Player '+(i+1)); }
 
-  function place(n,ms){
-    var c=center(n);
-    token.style.transition=ms>0?('transform '+ms+'ms ease'):'none';
-    token.style.transform='translate('+c.x.toFixed(1)+'px,'+c.y.toFixed(1)+'px)';
+  // Sound effects made with the browser's own audio, no files. A gesture (the Roll button) starts the audio.
+  var AC=null;
+  function audio(){
+    if(!sndEl.checked) return null;
+    try{ var C=window.AudioContext||window.webkitAudioContext; if(!C) return null; if(!AC) AC=new C(); if(AC.state==='suspended') AC.resume(); return AC; }catch(e){ return null; }
+  }
+  function tone(f,dur,type,t0,vol,slideTo){
+    var a=audio(); if(!a) return; var t=a.currentTime+(t0||0), o=a.createOscillator(), gn=a.createGain();
+    o.type=type||'sine'; o.frequency.setValueAtTime(f,t); if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo,t+dur);
+    gn.gain.setValueAtTime(0.0001,t); gn.gain.exponentialRampToValueAtTime(vol||0.08,t+0.015); gn.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(gn); gn.connect(a.destination); o.start(t); o.stop(t+dur+0.05);
+  }
+  function noise(dur,t0,vol,freq){
+    var a=audio(); if(!a) return; var len=Math.floor(a.sampleRate*dur), buf=a.createBuffer(1,len,a.sampleRate), d=buf.getChannelData(0), i;
+    for(i=0;i<len;i++) d[i]=(Math.random()*2-1)*(1-i/len);
+    var s=a.createBufferSource(); s.buffer=buf; var f=a.createBiquadFilter(); f.type='bandpass'; f.frequency.value=freq||1800;
+    var gn=a.createGain(); gn.gain.value=vol||0.12; s.connect(f); f.connect(gn); gn.connect(a.destination); s.start(a.currentTime+(t0||0));
+  }
+  var SFX={
+    dice:function(){ for(var i=0;i<7;i++) noise(0.05,i*0.065,0.14,1200+Math.random()*1800); },
+    step:function(i){ tone(i===0?520:660,0.06,'triangle',0,0.05); },
+    ladder:function(){ [523,659,784,1047].forEach(function(f,k){ tone(f,0.16,'triangle',k*0.1,0.09); }); },
+    snake:function(){ tone(420,0.7,'sawtooth',0,0.06,110); },
+    turn:function(){ tone(880,0.12,'sine',0,0.05); tone(1175,0.16,'sine',0.1,0.05); },
+    nope:function(){ tone(160,0.25,'square',0,0.04); },
+    win:function(){ [523,659,784,1047,784,1047,1319].forEach(function(f,k){ tone(f,0.2,'triangle',k*0.13,0.1); }); }
+  };
+  function sfx(name,arg){ if(sndEl.checked && SFX[name]) SFX[name](arg); }
+
+  function off(i,n){ if(nPlayers()!==2) return [0,0]; return shown[1-i]===n ? (i===0?[-9,-7]:[9,7]) : [0,0]; }
+  function setT(i,n,ms){
+    var c=center(n), o=off(i,n);
+    toks[i].style.transition=ms>0?('transform '+ms+'ms ease'):'none';
+    toks[i].style.transform='translate('+(c.x+o[0]).toFixed(1)+'px,'+(c.y+o[1]).toFixed(1)+'px)';
+  }
+  function place(i,n,ms){
+    var old=shown[i]; shown[i]=n; setT(i,n,ms);
+    if(nPlayers()===2){ var j=1-i; if(shown[j]===n||shown[j]===old){ setT(j,shown[j],0); } }
   }
   function sleep(ms){ return new Promise(function(res){ setTimeout(res,ms); }); }
   function say(kind,label,what,tip){
@@ -318,47 +457,131 @@ button{font:inherit; cursor:pointer}
     var w=document.createElement('p'); w.className='what'; w.textContent=what; msg.appendChild(w);
     var p=document.createElement('p'); p.className='tip'; p.textContent=tip||''; msg.appendChild(p);
   }
-  place(1,0);
+  function markActive(){
+    toks[0].setAttribute('class','tok'+(cur===0&&!over?' active':'')); toks[1].setAttribute('class','tok'+(cur===1&&!over?' active':''));
+    toks[1].style.display=nPlayers()===2?'':'none';
+  }
+  function updateTurns(){
+    turnsEl.innerHTML='';
+    for(var i=0;i<nPlayers();i++){
+      var s=document.createElement('span'); s.className='pl'+((i===cur&&!over)?' on':'');
+      var d=document.createElement('span'); d.className='dot'; d.style.background=COLORS[i]; s.appendChild(d);
+      var tx=document.createElement('span'); tx.textContent=pname(i)+': square '+pos[i]+((i===cur&&!over)?(nPlayers()===2?'  · your turn':''):''); s.appendChild(tx);
+      turnsEl.appendChild(s);
+    }
+    rollBtn.textContent=over?'Roll the dice':('Roll the dice'+(nPlayers()===2?', Player '+(cur+1):''));
+  }
+  function nextTurn(){
+    if(nPlayers()===2){ cur=1-cur; sfx('turn'); }
+    busy=false; rollBtn.disabled=false; markActive(); updateTurns();
+  }
+  place(0,1,0); place(1,1,0); markActive(); updateTurns();
 
   async function roll(){
-    if(busy) return;
-    busy=true; rollBtn.disabled=true;
+    if(busy||over) return;
+    busy=true; rollBtn.disabled=true; var me=cur;
+    sfx('dice'); diceEl.textContent='Rolling…'; await sleep(reduce?80:450);
     var d=1+Math.floor(Math.random()*6);
-    diceEl.textContent='Roll: '+d;
-    var target=pos+d;
+    diceEl.textContent=pname(me)+' rolled '+d;
+    var target=pos[me]+d;
     if(target>100){
-      say('plain','Not this turn','You need exactly '+(100-pos)+' to reach the summit.','Roll again.');
-      busy=false; rollBtn.disabled=false; return;
+      sfx('nope');
+      say('plain','Not this turn',pname(me)+(pname(me)==='You'?' need':' needs')+' exactly '+(100-pos[me])+' to reach the summit.',nPlayers()===2?'The other player is next.':'Roll again.');
+      await sleep(reduce?80:700); nextTurn(); return;
     }
     var step=reduce?60:260;
-    for(var n=pos+1;n<=target;n++){ place(n,reduce?0:step-40); await sleep(step); }
-    pos=target;
-    if(LADDERS[pos]){
-      var note=NOTES[pos], dest=LADDERS[pos];
-      say('good','▲ Ladder: up to '+dest,note[0],note[1]);
+    for(var n=pos[me]+1;n<=target;n++){ place(me,n,reduce?0:step-40); sfx('step',me); await sleep(step); }
+    pos[me]=target; updateTurns();
+    if(LADDERS[pos[me]]){
+      var note=NOTES[pos[me]], dest=LADDERS[pos[me]];
+      say('good',pname(me)+': ▲ Ladder up to '+dest,note[0],note[1]); sfx('ladder');
       await sleep(reduce?100:550);
-      place(dest,reduce?0:750); await sleep(reduce?100:800); pos=dest;
-    } else if(SNAKES[pos]){
-      var sn=NOTES[pos], low=SNAKES[pos];
-      say('bad','▼ Snake: down to '+low,sn[0],sn[1]);
+      place(me,dest,reduce?0:750); await sleep(reduce?100:800); pos[me]=dest;
+    } else if(SNAKES[pos[me]]){
+      var sn=NOTES[pos[me]], low=SNAKES[pos[me]];
+      say('bad',pname(me)+': ▼ Snake down to '+low,sn[0],sn[1]); sfx('snake');
       await sleep(reduce?100:550);
-      place(low,reduce?0:750); await sleep(reduce?100:800); pos=low;
+      place(me,low,reduce?0:750); await sleep(reduce?100:800); pos[me]=low;
     } else {
-      say('plain','Square '+pos,'Keep climbing.','Ladders lift you up and snakes pull you down.');
+      say('plain',pname(me)+' on square '+pos[me],tipFor(pos[me]),'Ladders lift you up and snakes pull you down.');
     }
-    if(pos===100){
-      say('good','You reached the summit','Every reading logged, every warning heard.','Press Reset board to climb again.');
-      rollBtn.disabled=true; busy=false; return;
+    updateTurns();
+    if(pos[me]===100){
+      over=true; sfx('win'); markActive(); updateTurns();
+      say('good',(pname(me)==='You'?'You reached':pname(me)+' reached')+' the summit','Every reading logged, every warning heard.','Press Reset board to play again.');
+      rollBtn.disabled=true; busy=false;
+      var winner=pname(me); setTimeout(function(){ openPrize(winner); },reduce?200:1300); return;
     }
-    busy=false; rollBtn.disabled=false;
+    nextTurn();
   }
   function reset(){
-    pos=1; busy=false; rollBtn.disabled=false; place(1,reduce?0:400);
+    pos=[1,1]; cur=0; over=false; busy=false; rollBtn.disabled=false;
+    shown=[0,0]; place(0,1,reduce?0:400); place(1,1,reduce?0:400); markActive(); updateTurns();
     diceEl.textContent='Roll: –';
-    say('plain','Ready','Press the button to roll. Land on a ladder to climb or a snake to slide.','You need an exact roll to land on 100.');
+    say('plain','Ready',(nPlayers()===2?'Player 1 starts. Take turns pressing the button to roll.':'Press the button to roll.')+' Land on a ladder to climb or a snake to slide.','You need an exact roll to land on 100.');
   }
+  // Scratch card for the winner
+  var TREATS=[
+    'A private video call with someone you love, with 15 extra minutes.',
+    'First choice of the next crew movie night.',
+    'Fresh fruit on the next supply flight.',
+    'Thirty minutes of window time to watch Earth go by.',
+    'A virtual beach hour: your favorite beach sounds and a calm view on the screen.',
+    'You choose the playlist for dinner.',
+    'Your favorite crumb-free treat from the pantry.',
+    'A thank-you message from Earth, recorded by the team.'
+  ];
+  var pz=$('prize'), sc=$('scratch'), sctx=sc.getContext('2d'), scratching=false, lastPt=null, cleared=false, lastSnd=0, moves=0, cardName='';
+  function paintFoil(name){
+    var i, w=640, h=360;
+    sctx.globalCompositeOperation='source-over'; sctx.globalAlpha=1;
+    var gr=sctx.createLinearGradient(0,0,w,h); gr.addColorStop(0,'#c9ced4'); gr.addColorStop(0.5,'#f4f6f8'); gr.addColorStop(1,'#b4bbc3');
+    sctx.fillStyle=gr; sctx.fillRect(0,0,w,h);
+    for(i=0;i<650;i++){ sctx.fillStyle='rgba(255,255,255,'+(Math.random()*0.55).toFixed(2)+')'; sctx.fillRect(Math.random()*w,Math.random()*h,2,2); }
+    sctx.fillStyle='#35424c'; sctx.textAlign='center';
+    sctx.font='800 34px Nunito, system-ui, sans-serif'; sctx.fillText('Congratulations',w/2,108);
+    var size=58; do{ sctx.font='800 '+size+'px Nunito, system-ui, sans-serif'; size-=3; }while(sctx.measureText(name).width>w-70&&size>20);
+    sctx.fillText(name,w/2,184);
+    sctx.font='700 26px Nunito, system-ui, sans-serif'; sctx.fillText('Scratch here to win a treat',w/2,262);
+  }
+  function ptOf(e){ var r=sc.getBoundingClientRect(); return {x:(e.clientX-r.left)*640/(r.width||640), y:(e.clientY-r.top)*360/(r.height||360)}; }
+  function stroke(a,b){
+    sctx.globalCompositeOperation='destination-out'; sctx.lineWidth=54; sctx.lineCap='round'; sctx.lineJoin='round';
+    sctx.beginPath(); sctx.moveTo(a.x,a.y); sctx.lineTo(b.x,b.y); sctx.stroke();
+  }
+  function clearedShare(){
+    try{ var d=sctx.getImageData(0,0,640,360).data, n=0, t=0, i; for(i=3;i<d.length;i+=64){ t++; if(d[i]<40) n++; } return n/t; }catch(e){ return 0; }
+  }
+  function revealCard(){
+    if(cleared) return; cleared=true; sc.style.transition=reduce?'none':'opacity .7s'; sc.style.opacity='0'; sc.style.pointerEvents='none';
+    $('pz-live').textContent='You won: '+$('pz-treat').textContent; sfx('ladder');
+  }
+  function openPrize(name){
+    cardName=name; cleared=false; moves=0;
+    $('pz-t').textContent=(name==='You'?'You reached':name+' reached')+' the summit!';
+    $('pz-treat').textContent=TREATS[Math.floor(Math.random()*TREATS.length)];
+    sc.style.transition='none'; sc.style.opacity='1'; sc.style.pointerEvents='auto'; $('pz-live').textContent='';
+    paintFoil(name==='You'?'You':name);
+    try{ if(pz.showModal) pz.showModal(); else pz.setAttribute('open',''); }catch(e){ pz.setAttribute('open',''); }
+  }
+  function closePrize(){ try{ if(pz.close) pz.close(); else pz.removeAttribute('open'); }catch(e){ pz.removeAttribute('open'); } }
+  sc.addEventListener('pointerdown',function(e){ if(cleared) return; scratching=true; lastPt=ptOf(e); try{ sc.setPointerCapture(e.pointerId); }catch(x){} stroke(lastPt,lastPt); });
+  sc.addEventListener('pointermove',function(e){
+    if(!scratching||cleared) return; var p=ptOf(e); stroke(lastPt,p); lastPt=p; moves++;
+    var now=Date.now(); if(now-lastSnd>80){ lastSnd=now; noise(0.05,0,0.05,3200); }
+    if(moves%12===0 && clearedShare()>0.5) revealCard();
+  });
+  function stopScratch(){ scratching=false; if(!cleared && clearedShare()>0.5) revealCard(); }
+  sc.addEventListener('pointerup',stopScratch); sc.addEventListener('pointercancel',stopScratch);
+  $('pz-reveal').addEventListener('click',revealCard);
+  $('pz-close').addEventListener('click',closePrize);
+  $('pz-again').addEventListener('click',function(){ closePrize(); reset(); });
+  n1El.addEventListener('input',updateTurns); n2El.addEventListener('input',updateTurns);
   rollBtn.addEventListener('click',roll);
   resetBtn.addEventListener('click',reset);
+  twoEl.addEventListener('change',reset);
+  sndEl.addEventListener('change',function(){ if(sndEl.checked) sfx('turn'); });
+  reset();
 })();
 </script>
 </body>
